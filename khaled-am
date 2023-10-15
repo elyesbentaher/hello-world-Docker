@@ -1,5 +1,4 @@
-hello
-echo "bonsoir"add_key: &add_key
+add_key: &add_key
   before_script:
     - export USER=${ANSIBLE_USER}
 
