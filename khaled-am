@@ -1,0 +1,145 @@
+add_key: &add_key
+  before_script:
+    - export USER=${ANSIBLE_USER}
+
+    - echo $CI_COMMIT_TAG
+    - RELEASE_APPLICATION=`echo $CI_COMMIT_TAG | cut -f1 -d"+" | tr [:upper:] [:lower:]`
+    - echo $RELEASE_APPLICATION
+    - RELEASE_CUSTO=`echo $CI_COMMIT_TAG | cut -f2 -d"+" | tr [:upper:] [:lower:]`
+    - echo $RELEASE_CUSTO
+
+    - mkdir -p ~/.ssh
+    - ssh-keygen -b 2048 -t rsa -f ~/.ssh/google_compute_engine -q -N ""
+    - chmod 600 ~/.ssh/google_compute_engine
+    - chmod 600 ~/.ssh/google_compute_engine.pub
+    
+    - eval "$(ssh-agent -s)"
+    - ssh-add ~/.ssh/google_compute_engine
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo -e ${VAULT_PASS} > ~/vault_pass.txt
+    - echo ${ANSIBLE_SA_FILE_CONTENT} > ~/svc_account.json
+    - export PATH="/google-cloud-sdk/bin:${PATH}"
+    - gcloud auth activate-service-account --key-file ~/svc_account.json
+    - gcloud compute ssh ${VM_CORE} --zone ${ZONE_CORE} --tunnel-through-iap --project ${PRJ_GCP} --command="hostname -f"
+    - mkdir /iap
+    - chmod 0740 /iap
+    - cp sh/gcp_iap_ssh.sh /iap
+    - chmod 0740 /iap/gcp_iap_ssh.sh
+    
+    - |
+      cat <<EOF > ~/.ansible.cfg
+      [defaults]
+      interpreter_python=/usr/bin/python
+      timeout = 90
+      force_color = 1
+      forks = 30
+      [ssh_connection]
+      pipelining=True
+      # WARNING: ssh_executable path MUST be absolute and without any shell variable
+      ssh_executable="/iap/gcp_iap_ssh.sh"
+      ssh_args = None
+      transfer_method=piped
+      usetty=True
+      scp_if_ssh = False
+      [privilege_escalation]
+      become=True
+      become_method=sudo
+      become_ask_pass=False
+      EOF
+
+####################################
+# Stage job ansible_check_hosts
+####################################
+.ansible_check: &ansible_check
+  <<: *add_key
+  stage: check_ansible_terraform
+  image:
+    name: eu.gcr.io/pjs-ba-devops-059430/ingenico/ansible-gcloud:${A_VERSION}
+    entrypoint:
+      - ""
+  script:
+    - cd ansible/
+    - ansible -i ./env/$PRJ_WRK/inventory all -m command -a "hostname -f" 
+
+
+####################################
+# Stage job stop
+####################################
+.job_stop: &job_stop
+  <<: *add_key
+  stage: ansible_stop
+  image:
+    name: eu.gcr.io/pjs-ba-devops-059430/ingenico/ansible-gcloud:${A_VERSION}
+    entrypoint:
+      - ""
+  script:
+    - cd ansible/
+    - ansible-playbook -i ./env/$PRJ_WRK/inventory --extra-vars '{ "env_release_tag":'$RELEASE_APPLICATION' }' playbooks/02_app_stop.yml --vault-password-file ~/vault_pass.txt
+
+####################################
+# Stage job deploy nfs
+####################################
+.job_deploy_nfs: &job_deploy_nfs
+  <<: *add_key
+  stage: ansible_deploy_nfs
+  image:
+    name: eu.gcr.io/pjs-ba-devops-059430/ingenico/ansible-gcloud:${A_VERSION}
+    entrypoint:
+      - ""
+  script:
+    - echo " *************************   job_deploy_nfs   *************************"
+    - cd ansible/
+    - ansible-playbook -i ./env/$PRJ_WRK/inventory --extra-vars '{ "env_release_tag":'$RELEASE_APPLICATION' }' playbooks/03_deploy_nfs_server.yml --vault-password-file ~/vault_pass.txt
+  environment:
+    name: $PRJ_WRK
+    url: $URL_FRONT
+
+####################################
+# Stage deploy core
+####################################
+.job_deploy_core: &job_deploy_core
+  <<: *add_key
+  stage: ansible_deploy_all
+  image:
+    name: eu.gcr.io/pjs-ba-devops-059430/ingenico/ansible-gcloud:${A_VERSION}
+    entrypoint:
+      - ""
+  script:
+    - echo " *************************   job_deploy_core   *************************"
+    - |-
+      if [[ $RELEASE_APPLICATION == null ]]; then
+          echo "the variable $RELEASE_APPLICATION is not defined so no application deployment is needed. " && exit 0
+      fi
+    - cd ansible/
+    - ansible-playbook -i ./env/$PRJ_WRK/inventory --extra-vars '{ "env_release_tag":'$RELEASE_APPLICATION' }' playbooks/03_deploy_tem_core.yml --vault-password-file ~/vault_pass.txt --skip-tags custo_core
+  environment:
+    name: $PRJ_WRK
+    url: $URL_FRONT
+
+####################################
+# Stage deploy front
+####################################
+.job_deploy_front: &job_deploy_front
+  <<: *add_key
+  stage: ansible_deploy_all
+  image:
+    name: eu.gcr.io/pjs-ba-devops-059430/ingenico/ansible-gcloud:${A_VERSION}
+    entrypoint:
+      - ""
+  script:
+    - echo " *************************   job_deploy_front   *************************"
+    - |-
+      if [[ $RELEASE_APPLICATION == null ]]; then
+          echo "the variable $RELEASE_APPLICATION is not defined so no application deployment is needed. " && exit 0
+      fi
+    - cd ansible/
+    - ansible-playbook -i ./env/$PRJ_WRK/inventory --extra-vars '{ "env_release_tag":'$RELEASE_APPLICATION' }' playbooks/03_deploy_tem_front.yml --vault-password-file ~/vault_pass.txt --skip-tags custo_front
+  environment:
+    name: $PRJ_WRK
+    url: $URL_FRONT
+  when: delayed
+  start_in: 80 seconds
+####################################
+# Stage deploy logstash
+####################################
+
