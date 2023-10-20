@@ -1,6 +1,6 @@
 # DevOps training
-
-
+this is a simple javascript hello world application 
+to run it : ./gradlew buildNode
 
 ## Getting started
 
