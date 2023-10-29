@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    checkout([$class: 'GitSCM', 
+                              branches: [[name: 'refs/heads/gradle-8.4']], 
+                              userRemoteConfigs: [[url: 'https://gitlab.com/proservice1/devops-training.git']]])
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                script {
+                    sh './gradlew buildNode' // Replace with your build script command
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'This will always execute'
+        }
+        success {
+            echo 'This will run only if successful'
+        }
+        failure {
+            echo 'This will run only if failed'
+        }
+        unstable {
+            echo 'This will run only if the run was marked as unstable'
+        }
+        changed {
+            echo 'This will run only if the state of the Pipeline has changed'
+            echo 'For example, if the Pipeline was previously failing but is now successful'
+        }
+    }
+}
+
