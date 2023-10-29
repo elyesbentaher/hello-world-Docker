@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Checkout1') {
             steps {
                 script {
                     checkout([$class: 'GitSCM', 
@@ -11,7 +11,7 @@ pipeline {
                 }
             }
         }
-        stage('Build') {
+        stage('Build2') {
             steps {
                 script {
                     sh './gradlew buildNode' // Replace with your build script command
