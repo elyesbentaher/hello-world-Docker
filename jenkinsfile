@@ -8,7 +8,7 @@ pipeline {
                     checkout([$class: 'GitSCM', 
                               branches: [[name: 'gradle-8.4']], 
                               userRemoteConfigs: [[url: 'https://gitlab.com/proservice1/devops-training.git']])
-                    }
+                    ])
                 }
             }
         }
