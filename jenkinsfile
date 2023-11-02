@@ -6,7 +6,7 @@ pipeline {
             steps {
                 script {
                     checkout([$class: 'GitSCM', 
-                              branches: [[name: 'gradle-8.4']], 
+                              branches: [[name: 'preprod_deploy']], 
                               userRemoteConfigs: [[url: 'https://gitlab.com/proservice1/devops-training.git']]
                     ])
                 }
@@ -24,7 +24,7 @@ pipeline {
         stage('DeployToPreprod') {
             when {
                 expression { 
-                    return env.BRANCH_NAME == 'gradle-8.4' 
+                    return env.BRANCH_NAME == 'preprod_deploy' 
                 }
             }
             steps {
@@ -48,7 +48,7 @@ pipeline {
         stage('DeployToProd') {
             when {
                 expression { 
-                    return env.BRANCH_NAME == 'gradle-8.4' 
+                    return env.BRANCH_NAME == 'preprod_deploy' 
                 }
             }
             steps {
