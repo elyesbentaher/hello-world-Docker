@@ -8,6 +8,7 @@ pipeline {
                     checkout([$class: 'GitSCM', 
                               branches: [[name: 'gradle-8.4']], 
                               userRemoteConfigs: [[url: 'https://gitlab.com/proservice1/devops-training.git']])
+                    }
                 }
             }
         }
@@ -28,16 +29,18 @@ pipeline {
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'deploy', passwordVariable: 'jenkins')]) {
-                    sshPublisher(publishers: [
-                        sshPublisherDesc(configName: 'preprod', transfers: [
-                            sshTransfer(sourceFiles: 'build/libs/*', removePrefix: 'build/libs', remoteDirectory: '/tmp', execCommand: 'chmod +x /tmp/gradlew && /tmp/gradlew buildNode')
-                        ], 
-                        sshServer: [sshServer(
-                            credentialsId: 'webserver_login',
-                            hostname: 'preprod',
-                            port: 22
-                        )])
-                    ])
+                    script {
+                        sshPublisher(publishers: [
+                            sshPublisherDesc(configName: 'preprod', transfers: [
+                                sshTransfer(sourceFiles: 'build/libs/*', removePrefix: 'build/libs', remoteDirectory: '/tmp', execCommand: 'chmod +x /tmp/gradlew && /tmp/gradlew buildNode')
+                            ], 
+                            sshServer: [sshServer(
+                                credentialsId: 'webserver_login',
+                                hostname: 'preprod',
+                                port: 22
+                            )])
+                        ])
+                    }
                 }
             }
         }
@@ -50,16 +53,18 @@ pipeline {
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'deploy', passwordVariable: 'jenkins')]) {
-                    sshPublisher(publishers: [
-                        sshPublisherDesc(configName: 'prod', transfers: [
-                            sshTransfer(sourceFiles: 'build/libs/*', removePrefix: 'build/libs', remoteDirectory: '/tmp', execCommand: 'chmod +x /tmp/gradlew && /tmp/gradlew buildNode')
-                        ], 
-                        sshServer: [sshServer(
-                            credentialsId: 'webserver_login',
-                            hostname: 'prod',
-                            port: 22
-                        )])
-                    ])
+                    script {
+                        sshPublisher(publishers: [
+                            sshPublisherDesc(configName: 'prod', transfers: [
+                                sshTransfer(sourceFiles: 'build/libs/*', removePrefix: 'build/libs', remoteDirectory: '/tmp', execCommand: 'chmod +x /tmp/gradlew && /tmp/gradlew buildNode')
+                            ], 
+                            sshServer: [sshServer(
+                                credentialsId: 'webserver_login',
+                                hostname: 'prod',
+                                port: 22
+                            )])
+                        ])
+                    }
                 }
             }
         }
