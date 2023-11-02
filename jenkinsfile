@@ -36,7 +36,7 @@ pipeline {
                             ], 
                             sshServer: [sshServer(
                                 credentialsId: 'webserver_login',
-                                hostname: '10.132.0.2',
+                                hostname: '34.77.94.82',
                                 port: 22
                             )])
                         ])
@@ -60,7 +60,7 @@ pipeline {
                             ], 
                             sshServer: [sshServer(
                                 credentialsId: 'webserver_login',
-                                hostname: '10.132.0.4',
+                                hostname: '35.240.62.3',
                                 port: 22
                             )])
                         ])
