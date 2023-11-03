@@ -21,6 +21,40 @@ pipeline {
                 }
             }
         }
+        stage('DeployToPreProd') {
+            when {
+                expression { 
+                    return env.BRANCH_NAME == 'preprod_deploy' 
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'deploy', passwordVariable: 'jenkins')]) {
+                    script {
+                        sshPublisher(publishers: [
+                            sshPublisherDesc(configName: 'preprod', 
+                                transfers: [
+                                    sshTransfer(
+                                        sourceFiles: 'build/libs/*', 
+                                        removePrefix: 'build/libs', 
+                                        remoteDirectory: '/tmp', 
+                                        execCommand: 'chmod +x /tmp/gradlew && /tmp/gradlew buildNode'
+                                    )
+                                ],
+                                remote: [
+                                    [ 
+                                        user: 'deploy', 
+                                        password: 'jenkins', 
+                                        hostname: '34.77.94.82', 
+                                        port: 22, 
+                                        allowAnyHosts: true
+                                    ]
+                                ]
+                            )
+                        ])
+                    }
+                }
+            }
+        }
         stage('DeployToProd') {
             when {
                 expression { 
