@@ -33,9 +33,8 @@ pipeline {
                 branch 'gradle-8.4-html-dockerizedapp'
             }
             steps {
-                input 'Deploy to Production?'
-                    script {
-                        sh "docker pull sdiri/helloworldapp:${env.BUILD_NUMBER}"
+                script {
+                    sh "docker pull sdiri/helloworldapp:${env.BUILD_NUMBER}"
                         try {
                             sh "docker stop hello-world"
                             sh "docker rm hello-world"
@@ -43,7 +42,7 @@ pipeline {
                             echo: 'caught error: $err'
                         }
                         sh "docker run --restart always --name train-schedule -p 3000:3000 -d sdiri/helloworldApp:${env.BUILD_NUMBER}\""
-                    }
+                }
             }
         }
     }
