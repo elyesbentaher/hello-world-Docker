@@ -38,10 +38,8 @@ pipeline {
                         try {
                             sh "docker stop hello-world"
                             sh "docker rm hello-world"
-                        } catch (err) {
-                            echo: 'caught error: $err'
-                        }
-                        sh "docker run --restart always --name train-schedule -p 3000:3000 -d sdiri/helloworldApp:${env.BUILD_NUMBER}\""
+                        } 
+                        sh "docker run --restart always --name helloworldapp -p 3000:3000 -d sdiri/helloworldapp:${env.BUILD_NUMBER}\""
                 }
             }
         }
