@@ -2,26 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout-project') {
-            steps {
-                script {
-                    checkout([$class: 'GitSCM',
-                              branches: [[name: 'refs/heads/gradle-8.4-html-dockerizedapp']],
-                              userRemoteConfigs: [[url: 'https://gitlab.com/proservice1/devops-training.git']]])
-                }
-            }
-        }
-        stage('Build-project') {
-            steps {
-                script {
-                    sh './gradlew buildNode' // Replace with your build script command
-                    PID=$!
-                    sleep 2
-                    kill $PID
-                }
-            }
-        }
-    
         stage('Build Docker Image') {
             when {
                 branch 'gradle-8.4-html-dockerizedapp'
