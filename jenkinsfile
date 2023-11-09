@@ -35,11 +35,9 @@ pipeline {
             steps {
                 script {
                     sh "docker pull sdiri/helloworldapp:${env.BUILD_NUMBER}"
-                        try {
-                            sh "docker stop hello-world"
-                            sh "docker rm hello-world"
-                        } 
-                        sh "docker run --restart always --name helloworldapp -p 3000:3000 -d sdiri/helloworldapp:${env.BUILD_NUMBER}\""
+                    sh "docker stop hello-world"
+                    sh "docker rm hello-world"
+                    sh "docker run --restart always --name helloworldapp -p 3000:3000 -d sdiri/helloworldapp:${env.BUILD_NUMBER}\""
                 }
             }
         }
