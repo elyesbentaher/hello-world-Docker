@@ -8,7 +8,7 @@ pipeline {
             }
             steps {
                 script {
-                    app = docker.build("sdiri/helloworldApp")
+                    app = docker.build("sdiri/helloworldapp")
                     app.inside {
                         sh 'echo $(curl localhost:3000)'
                     }
@@ -35,7 +35,7 @@ pipeline {
             steps {
                 input 'Deploy to Production?'
                     script {
-                        sh "docker pull sdiri/helloworldApp:${env.BUILD_NUMBER}"
+                        sh "docker pull sdiri/helloworldapp:${env.BUILD_NUMBER}"
                         try {
                             sh "docker stop hello-world"
                             sh "docker rm hello-world"
