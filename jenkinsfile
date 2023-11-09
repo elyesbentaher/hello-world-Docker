@@ -15,6 +15,12 @@ pipeline {
             steps {
                 script {
                     sh './gradlew buildNode' // Replace with your build script command
+                     # Get its PID
+                     PID=$!
+                     # Wait for 2 seconds
+                     sleep 2
+                     # Kill it
+                     kill $PID
                 }
             }
         }
