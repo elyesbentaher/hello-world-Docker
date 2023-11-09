@@ -52,10 +52,10 @@ pipeline {
             steps {
                 input 'Deploy to Production?'
                     script {
-                        sh "docker pull sdiri/helloworldApp:${env.BUILD_NUMBER}\"
+                        sh "docker pull sdiri/helloworldApp:${env.BUILD_NUMBER}"
                         try {
-                            sh "docker stop hello-world\"
-                            sh "docker rm hello-world\"
+                            sh "docker stop hello-world"
+                            sh "docker rm hello-world"
                         } catch (err) {
                             echo: 'caught error: $err'
                         }
