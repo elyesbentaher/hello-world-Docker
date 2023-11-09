@@ -5,8 +5,8 @@ pipeline {
         stage('Checkout-project') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM', 
-                              branches: [[name: 'refs/heads/gradle-8.4']], 
+                    checkout([$class: 'GitSCM',
+                              branches: [[name: 'refs/heads/gradle-8.4-html-dockerizedapp']],
                               userRemoteConfigs: [[url: 'https://gitlab.com/proservice1/devops-training.git']]])
                 }
             }
@@ -19,7 +19,52 @@ pipeline {
             }
         }
     }
-
+    stage('Build Docker Image') {
+            when {
+                branch 'gradle-8.4-html-dockerizedapp'
+            }
+            steps {
+                script {
+                    app = docker.build("sdiri/helloworldApp")
+                    app.inside {
+                        sh 'echo $(curl localhost:3000)'
+                    }
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            when {
+                branch 'gradle-8.4-html-dockerizedapp'
+            }
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker_hub_login') {
+                        app.push("${env.BUILD_NUMBER}")
+                        app.push("latest")
+                    }
+                }
+            }
+        }
+        stage('DeployToProduction') {
+            when {
+                branch 'gradle-8.4-html-dockerizedapp'
+            }
+            steps {
+                input 'Deploy to Production?'
+                    script {
+                        sh "docker pull sdiri/helloworldApp:${env.BUILD_NUMBER}\"
+                        try {
+                            sh "docker stop hello-world\"
+                            sh "docker rm hello-world\"
+                        } catch (err) {
+                            echo: 'caught error: $err'
+                        }
+                        sh "docker run --restart always --name train-schedule -p 3000:3000 -d sdiri/helloworldApp:${env.BUILD_NUMBER}\""
+                    }
+            }
+        }
+    }
+}
     post {
         always {
             echo 'This will always execute'
@@ -39,4 +84,3 @@ pipeline {
         }
     }
 }
-

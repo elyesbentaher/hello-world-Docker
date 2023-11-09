@@ -24,3 +24,4 @@ ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
 # Command to run your application
 CMD ["./gradlew", "buildNode"]
 
+
