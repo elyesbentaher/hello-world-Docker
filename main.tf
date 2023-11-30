@@ -4,8 +4,14 @@ provider "google" {
   region      = "europe-west1" # Adjust this based on your preferred region
 }
 
-resource "google_storage_bucket" "my_bucket" {
-  name          = "proservice_backet"
-  location      = "US" # Adjust this based on your preferred region
-  force_destroy = true # This allows Terraform to destroy the bucket
+module "maroua_instance" {
+  source = "./modules/maroua_instance"
 }
+
+terraform {
+  backend "gcs" {
+    bucket = "proservice_backet1"
+    prefix = "./your/tfstate"
+  }
+}
+
