@@ -1,0 +1,23 @@
+---
+- hosts: webservers
+  become: yes
+  tasks:
+    - name: install httpd
+      yum:
+        name: httpd
+        state: latest
+
+    - name: create index.html file
+      file:
+        path: /var/www/html/index.html  # Fixed the path
+        state: touch
+
+    - name: add web content
+      lineinfile:  # Corrected the module name to lineinfile
+        line: "here is some text"  # Enclosed the line in quotes
+        path: /var/www/html/index.html  # Fixed the path
+
+    - name: start httpd
+      service:
+        name: httpd
+        state: started
