@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+task npmInstall(type: Exec) {
+    workingDir './'
+    commandLine 'npm', 'install'
+}
+
+task npmRun(type: Exec) {
+    workingDir './'
+    commandLine 'npm', 'run', 'start'
+    ignoreExitValue true
+}
+
+task buildNode(dependsOn: ['npmInstall']) {
+    finalizedBy 'npmRun'
+}
