@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Étape de construction - Compilation et empaquetage...'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                echo 'Étape de test - Exécution des tests...'
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                echo 'Étape de déploiement - Déploiement de l\'application...'
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Étape exécutée toujours, même en cas d\'échec.'
+        }
+        success {
+            echo 'Déploiement réussi!'
+        }
+        failure {
+            echo 'Échec du déploiement.'
+        }
+    }
+}
+
