@@ -19,5 +19,18 @@ pipeline {
             }
         }
     }
+    
+    post {
+        always {
+            echo 'Étape exécutée toujours, même en cas d\'échec.'
+        }
+        success {
+            echo 'Déploiement réussi!'
+        }
+        failure {
+            echo 'Échec du déploiement.'
+        }
+    }
+
 }
 
