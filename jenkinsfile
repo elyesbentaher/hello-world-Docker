@@ -20,8 +20,6 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    sh 'docker images"
-
                     // Push Docker image to Docker Hub
                     docker.withRegistry('https://docker.io', 'dockerhub_credentials') {
                         docker.image("elyeslayes/docker-pipeline:latest").push()
