@@ -2,41 +2,32 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout-project') {
+        stage('Checkout') {
+            steps {
+                // Checkout your code from version control
+                 checkout([$class: 'GitSCM', branches: [[name: '*/docker-pipeline']],
+                 userRemoteConfigs: [[url: 'https://gitlab.com/elyeslayes0/dev-ops-training-fork-2.git']]])
+            }
+        }
+        
+        stage('Build Docker Image') {
             steps {
                 script {
-                    checkout([$class: 'GitSCM', 
-                              branches: [[name: 'hello-world-js']], 
-                              userRemoteConfigs: [[url: 'https://gitlab.com/elyeslayes0/dev-ops-training-fork-2']]])
+                    // Build Docker image
+                    docker.build("elyeslayes/docker-pipeline:latest")
                 }
             }
         }
-        stage('Build-project') {
-            steps {
-                script {
-                    sh './gradlew buildNode' // Replace with your build script command
-                }
-            }
-        }
-    }
 
-    post {
-        always {
-            echo 'This will always execute'
-        }
-        success {
-            echo 'This will run only if successful'
-        }
-        failure {
-            echo 'This will run only if failed'
-        }
-        unstable {
-            echo 'This will run only if the run was marked as unstable'
-        }
-        changed {
-            echo 'This will run only if the state of the Pipeline has changed'
-            echo 'For example, if the Pipeline was previously failing but is now successful'
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Push Docker image to Docker Hub
+                    docker.withRegistry('https://hub.docker.com', 'dockerhub_credentials') {
+                        docker.image("elyeslayes/docker-pipeline:latest").push()
+                    }
+                }
+            }
         }
     }
 }
-
