@@ -12,13 +12,13 @@ pipeline {
         
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t elyeslayes/docker-pipeline:${BUILD_NUMBER} .'
+                sh 'docker build -t elyeslayes/docker-pipeline:${Docker_build_number}${BUILD_NUMBER} .'
             }
         }
         
         stage('Push Docker Image') {
             steps {
-                sh 'docker push elyeslayes/docker-pipeline:${BUILD_NUMBER}'
+                sh 'docker push elyeslayes/docker-pipeline:${Docker_build_number}${BUILD_NUMBER}'
             }
         }
     }
