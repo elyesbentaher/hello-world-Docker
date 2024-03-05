@@ -2,38 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                  checkout scm
-             }
-        }
-        
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Build Docker image
-                    docker.build("elyeslayes/docker-pipeline:latest")
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    // Push Docker image to Docker Hub
-                    docker.withRegistry('', 'dockerhub_credentials') {
-                        docker.image("elyeslayes/docker-pipeline:latest").push()
-                    }
-                }
-            }
-        }
-    }
-}
-
-pipeline {
-    agent any
-
-    stages {
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub_credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
